@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHifz | لوحة تحكم ولي الأمر</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1abc9c;
+            --secondary: #2c3e50;
+            --accent: #f39c12;
+            --bg-light: #f4f9f8;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --success: #2ecc71;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* شريط التنقل العلوي */
+        header {
+            background-color: var(--card-bg);
+            padding: 15px 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover { background: #ff6b81; }
+
+        /* حاوية الداشبورد */
+        .container {
+            padding: 30px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .welcome-sec {
+            margin-bottom: 30px;
+        }
+
+        .welcome-sec h1 {
+            margin: 0 0 5px 0;
+            color: var(--secondary);
+        }
+
+        .welcome-sec p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* شبكة الكروت */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            border-top: 4px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* كارت الحصة القادمة */
+        .next-session { border-top-color: var(--accent); }
+        .session-time {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--secondary);
+            margin: 10px 0;
+        }
+        .session-date { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
+
+        /* كارت التقدم في السورة */
+        .progress-bar-container {
+            background: #eee;
+            border-radius: 10px;
+            height: 15px;
+            width: 100%;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: var(--success);
+            height: 100%;
+            width: 40%; /* النسبة هنا */
+            border-radius: 10px;
+            transition: 1s ease-in-out;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* كارت تحليل المستوى */
+        .analysis-card { grid-column: 1 / -1; } /* يأخذ عرض الشاشة بالكامل */
+        @media (min-width: 900px) {
+            .analysis-card { grid-column: span 2; }
+        }
+        .skill-row {
+            margin-bottom: 15px;
+        }
+        .skill-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .skill-bar-bg {
+            background: #ecf0f1;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .skill-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        /* كارت المهام */
+        .task-list { list-style: none; padding: 0; margin: 0; }
+        .task-item {
+            background: var(--bg-light);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+        .upload-btn {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        .upload-btn:hover { background: #16a085; }
+
+        /* كارت التقييم */
+        .feedback-card { border-top-color: #9b59b6; }
+        .stars { color: #f1c40f; font-size: 1.5rem; letter-spacing: 2px; margin-bottom: 10px;}
+        .teacher-comment {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 8px;
+            border-right: 4px solid #9b59b6;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            font-style: italic;
+        }
+        .teacher-name { margin-top: 10px; font-weight: bold; font-size: 0.9rem; color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">SmartHifz</div>
+        <a href="login.html" class="logout-btn">تسجيل الخروج</a>
+    </header>
+
+    <div class="container">
+        <div class="welcome-sec">
+            <h1>مرحباً بك، والد يوسف! 👋</h1>
+            <p>إليك ملخص أداء يوسف وتطوره في رحلة حفظ القرآن الكريم.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <!-- 1. الحصة القادمة -->
+            <div class="card next-session">
+                <h3>📅 موعد الحصة القادمة</h3>
+                <div class="session-date">غداً، الأربعاء</div>
+                <div class="session-time">04:30 مساءً</div>
+                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">بتوقيت مكة المكرمة</p>
+            </div>
+
+            <!-- 2. التقدم الحالي -->
+            <div class="card">
+                <h3>📖 السورة الحالية: البقرة</h3>
+                <p style="margin: 0; color: var(--text-light);">تم حفظ 12 وجه من أصل 48</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 25%;"></div>
+                </div>
+                <div class="progress-text">
+                    <span>البداية</span>
+                    <span>25% إنجاز</span>
+                </div>
+            </div>
+
+            <!-- 3. المهام المطلوبة (To-Do) -->
+            <div class="card">
+                <h3>🎯 مهام اليوم</h3>
+                <ul class="task-list">
+                    <li class="task-item">
+                        <input type="checkbox" id="task1">
+                        <label for="task1">مراجعة من صفحة 1 إلى 5</label>
+                    </li>
+                    <li class="task-item">
+                        <input type="checkbox" id="task2">
+                        <label for="task2">حفظ الوجه رقم 13 الجديد</label>
+                    </li>
+                    <li class="task-item">
+                        <input type="checkbox" id="task3">
+                        <label for="task3">تسجيل صوتي لتلاوة الوجه الجديد</label>
+                    </li>
+                </ul>
+                <button class="upload-btn" onclick="alert('سيتم فتح نافذة اختيار الملفات لاحقاً عند برمجة الباك إند')">
+                    📎 رفع تسجيل صوتي / ملف
+                </button>
+            </div>
+
+            <!-- 4. تقييم المعلم -->
+            <div class="card feedback-card">
+                <h3>⭐ آخر تقييم من المعلم</h3>
+                <div class="stars">★★★★★</div>
+                <div class="teacher-comment">
+                    "ما شاء الله، يوسف كان متميزاً جداً في حصة اليوم. قوة الحفظ ممتازة، ولكن نحتاج فقط للتركيز قليلاً على أحكام المدود في المراجعة القادمة. بارك الله فيكم على المتابعة."
+                </div>
+                <div class="teacher-name">- أ. علي هاني (معلم القرآن)</div>
+            </div>
+
+            <!-- 5. تحليل مستوى الطالب -->
+            <div class="card analysis-card">
+                <h3>📊 تحليل مستوى الطالب (هذا الشهر)</h3>
+                
+                <div class="skill-row">
+                    <div class="skill-name"><span>قوة الحفظ الجديد</span> <span>90%</span></div>
+                    <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 90%; background: #2ecc71;"></div></div>
+                </div>
+                
+                <div class="skill-row">
+                    <div class="skill-name"><span>جودة التجويد والأحكام</span> <span>75%</span></div>
+                    <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 75%; background: #f39c12;"></div></div>
+                </div>
+                
+                <div class="skill-row">
+                    <div class="skill-name"><span>إتقان المراجعة (الماضي)</span> <span>85%</span></div>
+                    <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 85%; background: #3498db;"></div></div>
+                </div>
+                
+                <div class="skill-row">
+                    <div class="skill-name"><span>التفاعل والانتباه أثناء الحصة</span> <span>95%</span></div>
+                    <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 95%; background: #9b59b6;"></div></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
