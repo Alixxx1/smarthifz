@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartHifz | لوحة تحكم ولي الأمر</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <title>SmartHifz | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #1abc9c;
@@ -18,14 +18,15 @@
         }
 
         body {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Tajawal', 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--bg-light);
             color: var(--text-dark);
+            overflow-x: hidden;
         }
 
-        /* شريط التنقل العلوي */
+        /* Navbar */
         header {
             background-color: var(--card-bg);
             padding: 15px 5%;
@@ -35,273 +36,284 @@
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
 
-        .logo {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--primary);
-        }
+        .logo { font-size: 24px; font-weight: 900; color: var(--primary); }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; }
 
-        .logout-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 8px 15px;
+        /* زر الترجمة */
+        .lang-btn {
+            background-color: transparent;
+            color: var(--secondary);
+            border: 2px solid var(--primary);
+            padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
-            font-family: inherit;
             font-weight: bold;
+            font-family: inherit;
             transition: 0.3s;
-            text-decoration: none;
         }
+        .lang-btn:hover { background-color: var(--primary); color: white; }
 
-        .logout-btn:hover { background: #ff6b81; }
+        /* روابط القائمة (للكمبيوتر) */
+        .desktop-nav { display: flex; gap: 20px; align-items: center; }
+        .desktop-nav a { text-decoration: none; color: var(--secondary); font-weight: bold; transition: 0.3s; }
+        .desktop-nav a:hover { color: var(--primary); }
+        .logout-btn { color: #e74c3c !important; }
+
+        /* القائمة الجانبية (للموبايل) */
+        .menu-toggle { display: none; flex-direction: column; cursor: pointer; gap: 5px; }
+        .menu-toggle span { width: 25px; height: 3px; background-color: var(--secondary); border-radius: 3px; transition: 0.3s; }
+
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+            flex-direction: column;
+            padding: 10px 0;
+        }
+        .mobile-nav.active { display: flex; }
+        .mobile-nav a { padding: 15px 5%; text-decoration: none; color: var(--secondary); font-weight: bold; border-bottom: 1px solid #eee; }
+        .mobile-nav a:last-child { border-bottom: none; }
 
         /* حاوية الداشبورد */
-        .container {
-            padding: 30px 5%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .welcome-sec {
-            margin-bottom: 30px;
-        }
-
-        .welcome-sec h1 {
-            margin: 0 0 5px 0;
-            color: var(--secondary);
-        }
-
-        .welcome-sec p {
-            margin: 0;
-            color: var(--text-light);
-            font-size: 1.1rem;
-        }
+        .container { padding: 30px 5%; max-width: 1200px; margin: 0 auto; }
+        .welcome-sec { margin-bottom: 30px; }
+        .welcome-sec h1 { margin: 0 0 5px 0; color: var(--secondary); }
+        .welcome-sec p { margin: 0; color: var(--text-light); font-size: 1.1rem; }
 
         /* شبكة الكروت */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
-            border-top: 4px solid var(--primary);
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card h3 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: var(--secondary);
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.03); border-top: 4px solid var(--primary); transition: transform 0.3s ease; }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { margin-top: 0; margin-bottom: 20px; color: var(--secondary); font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
 
         /* كارت الحصة القادمة */
         .next-session { border-top-color: var(--accent); }
-        .session-time {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--secondary);
-            margin: 10px 0;
-        }
+        .session-time { font-size: 1.8rem; font-weight: 900; color: var(--secondary); margin: 10px 0; }
         .session-date { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
 
         /* كارت التقدم في السورة */
-        .progress-bar-container {
-            background: #eee;
-            border-radius: 10px;
-            height: 15px;
-            width: 100%;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            background: var(--success);
-            height: 100%;
-            width: 40%; /* النسبة هنا */
-            border-radius: 10px;
-            transition: 1s ease-in-out;
-        }
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-weight: bold;
-        }
+        .progress-bar-container { background: #eee; border-radius: 10px; height: 15px; width: 100%; margin-top: 10px; overflow: hidden; }
+        .progress-bar { background: var(--success); height: 100%; width: 17%; border-radius: 10px; transition: 1s ease-in-out; }
+        .progress-text { display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; font-size: 0.95rem;}
 
         /* كارت تحليل المستوى */
-        .analysis-card { grid-column: 1 / -1; } /* يأخذ عرض الشاشة بالكامل */
-        @media (min-width: 900px) {
-            .analysis-card { grid-column: span 2; }
-        }
-        .skill-row {
-            margin-bottom: 15px;
-        }
-        .skill-name {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .skill-bar-bg {
-            background: #ecf0f1;
-            height: 10px;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .skill-bar-fill {
-            height: 100%;
-            border-radius: 5px;
-        }
+        .analysis-card { grid-column: 1 / -1; }
+        @media (min-width: 900px) { .analysis-card { grid-column: span 2; } }
+        .skill-row { margin-bottom: 15px; }
+        .skill-name { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 500; }
+        .skill-bar-bg { background: #ecf0f1; height: 10px; border-radius: 5px; overflow: hidden; }
+        .skill-bar-fill { height: 100%; border-radius: 5px; }
 
         /* كارت المهام */
         .task-list { list-style: none; padding: 0; margin: 0; }
-        .task-item {
-            background: var(--bg-light);
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .task-item { background: var(--bg-light); padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .task-content { display: flex; align-items: center; gap: 10px; }
         .task-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
-        .upload-btn {
-            display: block;
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
+        
+        /* زر عرض المصحف */
+        .task-link {
+            background: #e8f8f5;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
             font-weight: bold;
-            font-family: inherit;
-            cursor: pointer;
-            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            border: 1px solid rgba(26,188,156,0.2);
             transition: 0.3s;
         }
+        .task-link:hover { background: var(--primary); color: white; }
+
+        .upload-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-family: inherit; cursor: pointer; margin-top: 15px; transition: 0.3s; }
         .upload-btn:hover { background: #16a085; }
 
         /* كارت التقييم */
         .feedback-card { border-top-color: #9b59b6; }
         .stars { color: #f1c40f; font-size: 1.5rem; letter-spacing: 2px; margin-bottom: 10px;}
-        .teacher-comment {
-            background: var(--bg-light);
-            padding: 15px;
-            border-radius: 8px;
-            border-right: 4px solid #9b59b6;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            font-style: italic;
-        }
+        .teacher-comment { background: var(--bg-light); padding: 15px; border-radius: 8px; border-inline-start: 4px solid #9b59b6; font-size: 0.95rem; line-height: 1.6; font-style: italic; }
         .teacher-name { margin-top: 10px; font-weight: bold; font-size: 0.9rem; color: var(--primary); }
 
+        /* إخفاء اللغة الإنجليزية افتراضياً */
+        [lang="en"] { display: none; }
+
+        /* الموبايل */
+        @media (max-width: 768px) {
+            .desktop-nav { display: none; }
+            .menu-toggle { display: flex; }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo">SmartHifz</div>
-        <a href="login.html" class="logout-btn">تسجيل الخروج</a>
+        
+        <div class="header-actions">
+            <!-- الروابط في الشاشات الكبيرة -->
+            <div class="desktop-nav">
+                <a href="dashboard.html"><span lang="ar">الرئيسية</span><span lang="en">Dashboard</span></a>
+                <a href="subscriptions.html"><span lang="ar">الاشتراكات</span><span lang="en">Subscriptions</span></a>
+                <a href="login.html" class="logout-btn"><span lang="ar">تسجيل الخروج</span><span lang="en">Logout</span></a>
+            </div>
+
+            <!-- زر الترجمة ثابت للجميع -->
+            <button class="lang-btn" onclick="toggleLanguage()" id="langSwitcher">English</button>
+            
+            <!-- الثلاث شرط للموبايل -->
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- قائمة الموبايل المنسدلة -->
+        <nav class="mobile-nav" id="mobileMenu">
+            <a href="dashboard.html"><span lang="ar">الرئيسية</span><span lang="en">Dashboard</span></a>
+            <a href="subscriptions.html"><span lang="ar">الاشتراكات</span><span lang="en">Subscriptions</span></a>
+            <a href="login.html" class="logout-btn"><span lang="ar">تسجيل الخروج</span><span lang="en">Logout</span></a>
+        </nav>
     </header>
 
     <div class="container">
         <div class="welcome-sec">
-            <h1>مرحباً بك، والد يوسف! 👋</h1>
-            <p>إليك ملخص أداء يوسف وتطوره في رحلة حفظ القرآن الكريم.</p>
+            <h1 lang="ar">مرحباً بك، والد يوسف! 👋</h1>
+            <h1 lang="en">Welcome, Youssef's Parent! 👋</h1>
+            <p lang="ar">إليك ملخص أداء يوسف وتطوره في رحلة حفظ القرآن الكريم.</p>
+            <p lang="en">Here is a summary of Youssef's progress in his Quran memorization journey.</p>
         </div>
 
         <div class="dashboard-grid">
             
             <!-- 1. الحصة القادمة -->
             <div class="card next-session">
-                <h3>📅 موعد الحصة القادمة</h3>
-                <div class="session-date">غداً، الأربعاء</div>
-                <div class="session-time">04:30 مساءً</div>
-                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;">بتوقيت مكة المكرمة</p>
+                <h3 lang="ar">📅 موعد الحصة القادمة</h3>
+                <h3 lang="en">📅 Next Session</h3>
+                
+                <div class="session-date" lang="ar">غداً، الأربعاء</div>
+                <div class="session-date" lang="en">Tomorrow, Wednesday</div>
+                
+                <div class="session-time" lang="ar">04:30 مساءً</div>
+                <div class="session-time" lang="en">04:30 PM</div>
+                
+                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;" lang="ar">بتوقيت مكة المكرمة</p>
+                <p style="color: var(--text-light); margin: 0; font-size: 0.9rem;" lang="en">Mecca Time (KSA)</p>
             </div>
 
-            <!-- 2. التقدم الحالي -->
+            <!-- 2. التقدم الحالي بالآيات -->
             <div class="card">
-                <h3>📖 السورة الحالية: البقرة</h3>
-                <p style="margin: 0; color: var(--text-light);">تم حفظ 12 وجه من أصل 48</p>
+                <h3 lang="ar">📖 السورة الحالية: البقرة</h3>
+                <h3 lang="en">📖 Current Surah: Al-Baqarah</h3>
+                
+                <p style="margin: 0; color: var(--text-light);" lang="ar">تم حفظ 50 آية من أصل 286</p>
+                <p style="margin: 0; color: var(--text-light);" lang="en">50 verses memorized out of 286</p>
+                
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: 25%;"></div>
+                    <div class="progress-bar" style="width: 17%;"></div>
                 </div>
                 <div class="progress-text">
-                    <span>البداية</span>
-                    <span>25% إنجاز</span>
+                    <span lang="ar">البداية</span>
+                    <span lang="en">Start</span>
+                    
+                    <span lang="ar">17% إنجاز</span>
+                    <span lang="en">17% Completed</span>
                 </div>
             </div>
 
-            <!-- 3. المهام المطلوبة (To-Do) -->
+            <!-- 3. المهام المطلوبة (To-Do) مع زر عرض الآيات -->
             <div class="card">
-                <h3>🎯 مهام اليوم</h3>
+                <h3 lang="ar">🎯 مهام اليوم</h3>
+                <h3 lang="en">🎯 Today's Tasks</h3>
                 <ul class="task-list">
                     <li class="task-item">
-                        <input type="checkbox" id="task1">
-                        <label for="task1">مراجعة من صفحة 1 إلى 5</label>
+                        <div class="task-content">
+                            <input type="checkbox" id="task1">
+                            <label for="task1" lang="ar">مراجعة سورة البقرة من آية 1 إلى آية 30</label>
+                            <label for="task1" lang="en">Review Al-Baqarah from verse 1 to 30</label>
+                        </div>
+                        <a href="https://quran.com/2/1-30" target="_blank" class="task-link">
+                            <span lang="ar">عرض الآيات 🔗</span>
+                            <span lang="en">Open Mushaf 🔗</span>
+                        </a>
                     </li>
                     <li class="task-item">
-                        <input type="checkbox" id="task2">
-                        <label for="task2">حفظ الوجه رقم 13 الجديد</label>
-                    </li>
-                    <li class="task-item">
-                        <input type="checkbox" id="task3">
-                        <label for="task3">تسجيل صوتي لتلاوة الوجه الجديد</label>
+                        <div class="task-content">
+                            <input type="checkbox" id="task2">
+                            <label for="task2" lang="ar">حفظ جديد: البقرة من آية 51 إلى 55</label>
+                            <label for="task2" lang="en">New Memorization: Al-Baqarah verse 51 to 55</label>
+                        </div>
+                        <a href="https://quran.com/2/51-55" target="_blank" class="task-link">
+                            <span lang="ar">عرض الآيات 🔗</span>
+                            <span lang="en">Open Mushaf 🔗</span>
+                        </a>
                     </li>
                 </ul>
-                <button class="upload-btn" onclick="alert('سيتم فتح نافذة اختيار الملفات لاحقاً عند برمجة الباك إند')">
-                    📎 رفع تسجيل صوتي / ملف
+                <button class="upload-btn">
+                    <span lang="ar">📎 رفع تسجيل صوتي / ملف</span>
+                    <span lang="en">📎 Upload Audio / File</span>
                 </button>
             </div>
 
             <!-- 4. تقييم المعلم -->
             <div class="card feedback-card">
-                <h3>⭐ آخر تقييم من المعلم</h3>
+                <h3 lang="ar">⭐ آخر تقييم من المعلم</h3>
+                <h3 lang="en">⭐ Latest Teacher Feedback</h3>
                 <div class="stars">★★★★★</div>
-                <div class="teacher-comment">
-                    "ما شاء الله، يوسف كان متميزاً جداً في حصة اليوم. قوة الحفظ ممتازة، ولكن نحتاج فقط للتركيز قليلاً على أحكام المدود في المراجعة القادمة. بارك الله فيكم على المتابعة."
+                <div class="teacher-comment" lang="ar">
+                    "ما شاء الله، يوسف كان متميزاً جداً في حصة اليوم. قوة الحفظ ممتازة، ولكن نحتاج فقط للتركيز قليلاً على أحكام المدود في المراجعة القادمة."
                 </div>
-                <div class="teacher-name">- أ. علي هاني (معلم القرآن)</div>
+                <div class="teacher-comment" lang="en">
+                    "Masha'Allah, Youssef was outstanding today. Memorization is excellent, we just need to focus a bit more on Madd rules in the next review."
+                </div>
+                <div class="teacher-name" lang="ar">- أ. علي هاني</div>
+                <div class="teacher-name" lang="en">- Mr. Ali Hani</div>
             </div>
 
             <!-- 5. تحليل مستوى الطالب -->
             <div class="card analysis-card">
-                <h3>📊 تحليل مستوى الطالب (هذا الشهر)</h3>
+                <h3 lang="ar">📊 تحليل مستوى الطالب (هذا الشهر)</h3>
+                <h3 lang="en">📊 Performance Analysis (This Month)</h3>
                 
                 <div class="skill-row">
-                    <div class="skill-name"><span>قوة الحفظ الجديد</span> <span>90%</span></div>
+                    <div class="skill-name">
+                        <span lang="ar">قوة الحفظ الجديد</span><span lang="en">New Memorization Strength</span> 
+                        <span>90%</span>
+                    </div>
                     <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 90%; background: #2ecc71;"></div></div>
                 </div>
                 
                 <div class="skill-row">
-                    <div class="skill-name"><span>جودة التجويد والأحكام</span> <span>75%</span></div>
+                    <div class="skill-name">
+                        <span lang="ar">جودة التجويد والأحكام</span><span lang="en">Tajweed & Rules Quality</span> 
+                        <span>75%</span>
+                    </div>
                     <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 75%; background: #f39c12;"></div></div>
                 </div>
                 
                 <div class="skill-row">
-                    <div class="skill-name"><span>إتقان المراجعة (الماضي)</span> <span>85%</span></div>
+                    <div class="skill-name">
+                        <span lang="ar">إتقان المراجعة (الماضي)</span><span lang="en">Past Review Mastery</span> 
+                        <span>85%</span>
+                    </div>
                     <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 85%; background: #3498db;"></div></div>
                 </div>
                 
                 <div class="skill-row">
-                    <div class="skill-name"><span>التفاعل والانتباه أثناء الحصة</span> <span>95%</span></div>
+                    <div class="skill-name">
+                        <span lang="ar">التفاعل والانتباه</span><span lang="en">Focus & Interaction</span> 
+                        <span>95%</span>
+                    </div>
                     <div class="skill-bar-bg"><div class="skill-bar-fill" style="width: 95%; background: #9b59b6;"></div></div>
                 </div>
             </div>
@@ -309,5 +321,44 @@
         </div>
     </div>
 
+    <script>
+        // --- 1. إعدادات اللغة (تعمل بانسجام مع باقي الموقع) ---
+        let currentLang = 'ar';
+
+        function applySavedLanguage() {
+            const savedLang = localStorage.getItem('siteLang');
+            if (savedLang) {
+                currentLang = savedLang;
+            }
+            updateLanguageUI();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            localStorage.setItem('siteLang', currentLang);
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = currentLang;
+            
+            document.querySelectorAll('[lang="en"]').forEach(el => {
+                el.style.display = currentLang === 'en' ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none';
+            });
+            document.querySelectorAll('[lang="ar"]').forEach(el => {
+                el.style.display = currentLang === 'ar' ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none';
+            });
+
+            document.getElementById('langSwitcher').textContent = currentLang === 'ar' ? 'English' : 'عربي';
+        }
+
+        window.onload = applySavedLanguage;
+
+        // --- 2. إعدادات القائمة المنسدلة (للموبايل) ---
+        function toggleMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
