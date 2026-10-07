@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHifz | لوحة الإدارة</title>
+    <!-- خط تجوال الجميل -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- مكتبة الأيقونات (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-dark: #0f172a; /* كحلي غامق جداً وفخم */
+            --primary: #1e293b;
+            --accent: #1abc9c;
+            --accent-hover: #16a085;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #94a3b8;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* ---------------- Sidebar ---------------- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--primary-dark);
+            min-height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-header h2 {
+            margin: 0; color: white; font-weight: 900; font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+        .sidebar-header h2 span { color: var(--accent); }
+        .sidebar-header p {
+            color: var(--text-light); margin: 5px 0 0 0; font-size: 0.9rem;
+        }
+
+        .nav-links { list-style: none; padding: 0; margin: 20px 0; }
+        
+        .nav-links li a {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 25px; color: #cbd5e1;
+            text-decoration: none; font-weight: bold; font-size: 1.1rem;
+            transition: all 0.3s; border-right: 4px solid transparent;
+        }
+
+        .nav-links li a i { font-size: 1.2rem; width: 25px; text-align: center; }
+
+        .nav-links li a:hover {
+            background-color: rgba(255,255,255,0.05); color: white;
+        }
+
+        .nav-links li a.active {
+            background: linear-gradient(90deg, rgba(26,188,156,0.1) 0%, transparent 100%);
+            color: var(--accent);
+            border-right-color: var(--accent);
+        }
+
+        /* ---------------- Mobile Header ---------------- */
+        .mobile-header {
+            display: none;
+            background-color: var(--primary-dark);
+            padding: 15px 20px;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed; top: 0; right: 0; width: 100%;
+            z-index: 998; box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-header h2 { margin: 0; color: white; font-size: 1.5rem; }
+        .mobile-header h2 span { color: var(--accent); }
+        
+        .menu-toggle {
+            background: none; border: none; color: white;
+            font-size: 1.5rem; cursor: pointer;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 999;
+        }
+
+        /* ---------------- Main Content ---------------- */
+        .main-content {
+            margin-right: 280px; /* نفس عرض السايد بار */
+            padding: 40px;
+            width: calc(100% - 280px);
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+
+        .page-header { margin-bottom: 40px; }
+        .page-header h1 { margin: 0 0 10px 0; color: var(--primary-dark); font-size: 2rem; }
+        .page-header p { margin: 0; color: var(--text-light); font-size: 1.1rem; }
+
+        .card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            max-width: 800px; /* مالي الشاشة بس مش سايح أوي في الشاشات العملاقة */
+            width: 100%;
+        }
+
+        /* ---------------- Form Styling ---------------- */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group { margin-bottom: 25px; }
+        
+        .form-group label {
+            display: block; font-weight: bold; margin-bottom: 10px;
+            color: var(--primary); font-size: 1rem;
+        }
+
+        .input-group {
+            position: relative; display: flex; align-items: center;
+        }
+
+        .input-group i {
+            position: absolute; right: 15px; color: var(--text-light); font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%; padding: 15px 45px 15px 15px;
+            border: 2px solid var(--border-color); border-radius: 10px;
+            font-family: inherit; font-size: 1rem;
+            transition: all 0.3s ease; background-color: #fdfdfd;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent); outline: none; background-color: white;
+            box-shadow: 0 0 0 4px rgba(26,188,156,0.1);
+        }
+
+        /* حقل الباسورد لضمان اتجاه سليم للغة الانجليزية */
+        .ltr-input { direction: ltr; padding: 15px 15px 15px 45px !important; }
+        .ltr-icon { right: auto !important; left: 15px; }
+
+        .btn-generate {
+            background: var(--primary); color: white;
+            border: none; padding: 15px 20px; border-radius: 10px;
+            cursor: pointer; font-weight: bold; font-family: inherit;
+            transition: 0.3s; white-space: nowrap; margin-right: 10px;
+        }
+        .btn-generate:hover { background: var(--primary-dark); }
+
+        .password-container { display: flex; align-items: center; }
+
+        .btn-submit {
+            background: var(--accent); color: white; border: none;
+            padding: 18px; width: 100%; border-radius: 10px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            transition: all 0.3s; font-family: inherit; margin-top: 15px;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        
+        .btn-submit:hover {
+            background: var(--accent-hover); transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(26,188,156,0.2);
+        }
+
+        /* ---------------- Responsive (Mobile & Tablet) ---------------- */
+        @media (max-width: 992px) {
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(100%); } /* إخفاء السايد بار لليمين */
+            .sidebar.active { transform: translateX(0); } /* إظهاره عند الضغط */
+            
+            .sidebar-overlay.active { display: block; }
+
+            .mobile-header { display: flex; }
+            
+            .main-content {
+                margin-right: 0; width: 100%;
+                padding: 100px 20px 30px 20px; /* مسافة من فوق عشان الهيدر */
+            }
+
+            .card { padding: 25px; }
+            .password-container { flex-direction: column; gap: 15px; }
+            .btn-generate { margin-right: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر الخاص بالموبايل فقط -->
+    <div class="mobile-header">
+        <h2>Smart<span>Hifz</span></h2>
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- طبقة التظليل لما القائمة تفتح في الموبايل -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- القائمة الجانبية -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Smart<span>Hifz</span></h2>
+            <p>لوحة تحكم الإدارة</p>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active"><i class="fas fa-user-plus"></i> إنشاء حساب جديد</a></li>
+            <li><a href="#"><i class="fas fa-users"></i> إدارة الطلاب (قريباً)</a></li>
+            <li><a href="#"><i class="fas fa-cog"></i> الإعدادات (قريباً)</a></li>
+            <li style="margin-top: 50px;"><a href="../index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> العودة للموقع</a></li>
+        </ul>
+    </nav>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>إنشاء حساب جديد</h1>
+            <p>قم بإنشاء بيانات الدخول لولي الأمر والطالب لبدء رحلة الحفظ.</p>
+        </div>
+
+        <div class="card">
+            <form id="createUserForm" onsubmit="handleCreateUser(event)">
+                
+                <div class="form-group">
+                    <label for="studentName">اسم الطالب (الاسم الكامل)</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="studentName" required placeholder="مثال: يوسف أحمد محمود">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">اسم المستخدم (للدخول)</label>
+                        <div class="input-group">
+                            <i class="fas fa-at ltr-icon"></i>
+                            <input type="text" id="username" class="ltr-input" required placeholder="مثال: youssef24">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <div class="password-container">
+                            <div class="input-group" style="flex-grow: 1;">
+                                <i class="fas fa-lock ltr-icon"></i>
+                                <input type="text" id="password" class="ltr-input" required placeholder="أدخل أو ولد كلمة مرور">
+                            </div>
+                            <button type="button" class="btn-generate" onclick="generatePassword()">
+                                <i class="fas fa-magic"></i> توليد
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> إنشاء الحساب وحفظ البيانات
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // دالة فتح وقفل القائمة الجانبية في الموبايل
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // دالة لتوليد باسورد عشوائي قوي
+        function generatePassword() {
+            const chars = "abcdefghijklmnopqrstuvwxyz0123456789!@#";
+            let password = "";
+            for (let i = 0; i < 8; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('password').value = password;
+            
+            // إضافة تأثير بسيط للزر لما نضغط عليه
+            const btn = document.querySelector('.btn-generate i');
+            btn.classList.remove('fa-magic');
+            btn.classList.add('fa-check');
+            setTimeout(() => {
+                btn.classList.remove('fa-check');
+                btn.classList.add('fa-magic');
+            }, 1000);
+        }
+
+        // دالة إنشاء الحساب
+        function handleCreateUser(event) {
+            event.preventDefault();
+            const name = document.getElementById('studentName').value;
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+
+            alert(`تم إنشاء الحساب بنجاح!\n\nاسم الطالب: ${name}\nاسم المستخدم: ${username}\nكلمة المرور: ${password}\n\n(جاهز للربط بقاعدة البيانات)`);
+            document.getElementById('createUserForm').reset();
+        }
+    </script>
+
+</body>
+</html>
