@@ -22,6 +22,7 @@
             --whatsapp: #25D366;
         }
 
+
         body {
             font-family: 'Tajawal', 'Poppins', sans-serif;
             margin: 0;
@@ -30,6 +31,34 @@
             color: var(--text-dark);
             overflow-x: hidden;
         }
+                /* تنسيق زر تثبيت التطبيق */
+.install-container {
+    display: none; /* مخفي افتراضياً */
+    margin-bottom: 25px;
+}
+.btn-install-app {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-shadow: 0 8px 15px rgba(26, 188, 156, 0.2);
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+.btn-install-app:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(26, 188, 156, 0.3);
+}
+
 
         /* Navbar */
         header {
@@ -198,6 +227,13 @@
     </header>
 
     <div class="container">
+
+        <!-- زر تثبيت التطبيق (يظهر برمجياً) -->
+<div class="install-container" id="installContainer">
+    <button class="btn-install-app" onclick="installPWA()">
+        📱 <span lang="ar">تثبيت التطبيق على هاتفك</span><span lang="en">Install App on Phone</span>
+    </button>
+</div>
         <!-- قسم الترحيب والنقاط -->
         <div class="welcome-sec">
             <div class="welcome-text">
@@ -429,6 +465,47 @@
         }
     </script>
 
-    
+
+
+<script>
+    // ------------------ نظام التثبيت (PWA Install) ------------------
+let deferredPrompt;
+const installContainer = document.getElementById('installContainer');
+
+// الاستماع لحدث جاهزية التثبيت من المتصفح
+window.addEventListener('beforeinstallprompt', (e) => {
+    // منع ظهور الرسالة التلقائية المزعجة
+    e.preventDefault();
+    // حفظ الحدث لاستخدامه عند الضغط على الزر
+    deferredPrompt = e;
+    // إظهار زر التثبيت الخاص بنا
+    installContainer.style.display = 'block';
+});
+
+// دالة تنفيذ التثبيت عند الضغط على الزر
+function installPWA() {
+    if (deferredPrompt) {
+        // إظهار نافذة التثبيت الأصلية للموبايل
+        deferredPrompt.prompt();
+        // انتظار رد المستخدم
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('تمت الموافقة على التثبيت');
+                installContainer.style.display = 'none'; // إخفاء الزر بعد الموافقة
+            }
+            deferredPrompt = null;
+        });
+    }
+}
+
+// إخفاء الزر تلقائياً إذا كان التطبيق مثبتاً بالفعل
+window.addEventListener('appinstalled', (evt) => {
+    installContainer.style.display = 'none';
+});
+</script>
+
+
+
+
 </body>
 </html>
