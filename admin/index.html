@@ -93,6 +93,8 @@
 
         <div class="card">
             <!-- فورم الإدخال -->
+
+
             <form id="createUserForm" onsubmit="handleCreateUser(event)">
                 
                 <div class="form-row">
@@ -173,29 +175,79 @@
 
         function handleCreateUser(event) {
             event.preventDefault();
+            
+            // تغيير شكل زرار الحفظ علشان الأدمن يعرف إنه بيحمل
+            const submitBtn = document.querySelector('.btn-submit');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+            submitBtn.disabled = true;
+
             const name = document.getElementById('studentName').value;
             const username = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
-            const lang = document.getElementById('userLang').value; // جلب لغة الحساب
+            const lang = document.getElementById('userLang').value;
 
-            const appLink = "https://smarthifz.com/app/login.html"; // سيتم تعديله لاحقاً
-            let whatsappMessage = "";
+            // الخدعة: تحويل اليوزرنيم لإيميل علشان فايربيز يقبله
+            const fakeEmail = `${username}@smarthifz.com`;
 
-            // تحديد رسالة الواتساب بناءً على اللغة المختارة
-            if (lang === 'ar') {
-                whatsappMessage = `السلام عليكم ورحمة الله وبركاته،\nمرحباً بك في منصة SmartHifz لتعليم القرآن الكريم 📖\n\nتم إنشاء حساب الطالب: *${name}* بنجاح.\n\nيمكنكم متابعة المهام، التقييمات، ومواعيد الحصص عبر لوحة التحكم الخاصة بكم.\n\n🌐 *رابط الدخول:* \n${appLink}\n\n👤 *اسم المستخدم:* ${username}\n🔑 *كلمة المرور:* ${password}\n\nنرجو الاحتفاظ بهذه البيانات، ونسأل الله لكم التوفيق والنجاح. 🌷`;
-            } else {
-                // الرسالة باللغة الإنجليزية
-                whatsappMessage = `Assalamu Alaikum,\nWelcome to the SmartHifz platform for Quran learning 📖\n\nThe account for the student: *${name}* has been created successfully.\n\nYou can track assignments, feedback, and upcoming sessions through your dashboard.\n\n🌐 *Login Link:* \n${appLink}\n\n👤 *Username:* ${username}\n🔑 *Password:* ${password}\n\nPlease keep these details safe. We wish you all the best and success. 🌷`;
-            }
-            
-            const encodedMessage = encodeURIComponent(whatsappMessage);
-            document.getElementById('whatsappBtn').href = `https://wa.me/?text=${encodedMessage}`;
+            // 1. إنشاء الحساب في Authentication (باستخدام النسخة الوهمية علشان الأدمن ما يخرجش)
+            secondaryApp.auth().createUserWithEmailAndPassword(fakeEmail, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
 
-            // إخفاء الفورم وإظهار شاشة النجاح
-            document.getElementById('createUserForm').style.display = 'none';
-            document.getElementById('successScreen').style.display = 'block';
+                // 2. حفظ بيانات الطالب في Firestore (قاعدة البيانات)
+                return db.collection("students").doc(user.uid).set({
+                    uid: user.uid,
+                    fullName: name,
+                    username: username,
+                    password: password, // بنحفظه علشان نبعته للأب (في التطبيقات الكبرى لا يحفظ، لكن هنا نحتاجه للواتساب)
+                    language: lang,
+                    status: "active",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    stars: 0,
+                    completedSurahs: [],
+                    currentSurah: "البقرة",
+                    progress: { savedVerses: 0, totalVerses: 286 }
+                });
+            })
+            .then(() => {
+                // تسجيل خروج النسخة الوهمية
+                secondaryApp.auth().signOut();
+                
+                // تجهيز رسالة الواتساب
+                const appLink = "https://smarthifz.com/app/login.html"; 
+                let whatsappMessage = "";
+                if (lang === 'ar') {
+                    whatsappMessage = `السلام عليكم ورحمة الله وبركاته،\nمرحباً بك في منصة SmartHifz 📖\nتم إنشاء حساب الطالب: *${name}* بنجاح.\n\n🌐 *رابط الدخول:* \n${appLink}\n👤 *اسم المستخدم:* ${username}\n🔑 *كلمة المرور:* ${password}`;
+                } else {
+                    whatsappMessage = `Assalamu Alaikum,\nWelcome to SmartHifz 📖\nAccount created for: *${name}*.\n\n🌐 *Login:* \n${appLink}\n👤 *Username:* ${username}\n🔑 *Password:* ${password}`;
+                }
+                
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                document.getElementById('whatsappBtn').href = `https://wa.me/?text=${encodedMessage}`;
+
+                // إظهار شاشة النجاح
+                document.getElementById('createUserForm').style.display = 'none';
+                document.getElementById('successScreen').style.display = 'block';
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    alert("عذراً، اسم المستخدم هذا (اليوزرنيم) مستخدم من قبل. جرب اسماً آخر.");
+                } else {
+                    alert("حدث خطأ أثناء الإنشاء: " + error.message);
+                }
+            })
+            .finally(() => {
+                // إرجاع الزرار لشكله الطبيعي
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
         }
+
+
+
+
 
         function resetForm() {
             document.getElementById('createUserForm').reset();
@@ -203,6 +255,13 @@
             document.getElementById('createUserForm').style.display = 'block';
         }
     </script>
+    <!-- مكتبات فايربيز -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+    
+    <!-- ملف الإعدادات بتاعنا -->
+    <script src="../firebase-init.js"></script>
 
 </body>
 </html>
