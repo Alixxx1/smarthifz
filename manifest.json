@@ -1,0 +1,24 @@
+{
+  "name": "SmartHifz | منصة حفظ القرآن",
+  "short_name": "SmartHifz",
+  "description": "تطبيق متابعة حفظ القرآن الكريم للطلاب وأولياء الأمور",
+  "start_url": "./app/login.html",
+  "display": "standalone",
+  "background_color": "#f4f9f8",
+  "theme_color": "#1abc9c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
