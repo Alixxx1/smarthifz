@@ -1,0 +1,103 @@
+<!DOCTYPE html> 
+<html lang="ar" dir="rtl"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>SmartHifz | دخول الإدارة</title> 
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
+    <style> 
+        :root { --primary-dark: #0f172a; --primary: #1e293b; --accent: #1abc9c; --text-main: #334155; } 
+        body { font-family: 'Tajawal', sans-serif; margin: 0; padding: 0; background-color: var(--primary-dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; } 
+        .login-box { background: var(--primary); padding: 40px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; border-top: 4px solid var(--accent); } 
+        .login-box h1 { margin: 0 0 10px 0; font-size: 2rem; font-weight: 900; } 
+        .login-box h1 span { color: var(--accent); } 
+        .login-box p { color: #94a3b8; margin-bottom: 30px; } 
+        .form-group { margin-bottom: 20px; text-align: right; } 
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #cbd5e1; } 
+        .input-group { position: relative; } 
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #64748b; } 
+        .input-group input { width: 100%; padding: 15px 15px 15px 45px; border: 1px solid #334155; border-radius: 8px; background: #0f172a; color: white; font-family: inherit; font-size: 1rem; box-sizing: border-box; direction: ltr; } 
+        .input-group input:focus { border-color: var(--accent); outline: none; } 
+        .btn-submit { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; font-family: inherit; } 
+        .btn-submit:hover { background: #16a085; }
+        .error-msg { background: #ef4444; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; font-size: 0.9rem; }
+    </style> 
+</head> 
+<body> 
+
+    <div class="login-box"> 
+        <h1>Smart<span>Hifz</span></h1> 
+        <p>بوابة دخول الإدارة (Admin Panel)</p> 
+
+        <div id="errorMsg" class="error-msg">البيانات غير صحيحة أو ليس لديك صلاحية.</div>
+
+        <form onsubmit="handleAdminLogin(event)"> 
+            <div class="form-group"> 
+                <label>البريد الإلكتروني للإدارة</label> 
+                <div class="input-group"> 
+                    <i class="fas fa-envelope"></i> 
+                    <input type="email" id="adminEmail" required placeholder="admin@smarthifz.com"> 
+                </div> 
+            </div> 
+            <div class="form-group"> 
+                <label>كلمة المرور</label> 
+                <div class="input-group"> 
+                    <i class="fas fa-lock"></i> 
+                    <input type="password" id="adminPassword" required placeholder="••••••••"> 
+                </div> 
+            </div> 
+            <button type="submit" class="btn-submit" id="loginBtn">دخول للإدارة <i class="fas fa-sign-in-alt"></i></button> 
+        </form> 
+    </div> 
+
+    <!-- مكتبات فايربيز --> 
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script> 
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script> 
+    <script src="../firebase-init.js"></script> 
+
+    <script> 
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            // 1. تسجيل الدخول العادي
+            auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                const uid = userCredential.user.uid;
+                
+                // 2. التحقق هل هذا الشخص فعلاً أدمن؟ (بالبحث في جدول admins)
+                return db.collection('admins').doc(uid).get();
+            })
+            .then((doc) => {
+                if (doc.exists) {
+                    // نجاح! هو أدمن فعلاً
+                    window.location.replace('index.html');
+                } else {
+                    // طالب بيحاول يستهبل ويدخل لوحة الإدارة! اطرد وسجل خروج
+                    auth.signOut();
+                    throw new Error("not_admin");
+                }
+            })
+            .catch((error) => {
+                errorMsg.style.display = 'block';
+                if(error.message === "not_admin") {
+                    errorMsg.innerText = "عفواً، هذا الحساب ليس لديه صلاحيات الإدارة.";
+                } else {
+                    errorMsg.innerText = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+                }
+                btn.innerHTML = 'دخول للإدارة <i class="fas fa-sign-in-alt"></i>';
+                btn.disabled = false;
+            });
+        }
+    </script> 
+</body> 
+</html>
