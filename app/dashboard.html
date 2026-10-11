@@ -139,8 +139,7 @@
                     <div> 
                         <div class="stars" id="feedbackStars">☆☆☆☆☆</div> 
                         <div class="teacher-comment"> 
-                            <span lang="ar" id="feedbackCommentAr">"لم يتم إضافة تقييم بعد."</span> 
-                            <span lang="en" id="feedbackCommentEn">"No feedback added yet."</span> 
+                            <span id="feedbackComment">"لم يتم إضافة تقييم بعد."</span> 
                         </div> 
                     </div> 
                 </div> 
@@ -183,6 +182,55 @@
 
     <script> 
         let currentUserUid = null; 
+        
+        // --- 📚 قاموس بسيط لترجمة السور والمهام ---
+        const surahTranslations = {
+            "الفاتحة": "Al-Fatihah", "البقرة": "Al-Baqarah", "آل عمران": "Ali 'Imran", "النساء": "An-Nisa", "المائدة": "Al-Ma'idah",
+            "الأنعام": "Al-An'am", "الأعراف": "Al-A'raf", "الأنفال": "Al-Anfal", "التوبة": "At-Tawbah", "يونس": "Yunus",
+            "هود": "Hud", "يوسف": "Yusuf", "الرعد": "Ar-Ra'd", "إبراهيم": "Ibrahim", "الحجر": "Al-Hijr",
+            "النحل": "An-Nahl", "الإسراء": "Al-Isra", "الكهف": "Al-Kahf", "مريم": "Maryam", "طه": "Taha",
+            "الأنبياء": "Al-Anbiya", "الحج": "Al-Hajj", "المؤمنون": "Al-Mu'minun", "النور": "An-Nur", "الفرقان": "Al-Furqan",
+            "الشعراء": "Ash-Shu'ara", "النمل": "An-Naml", "القصص": "Al-Qasas", "العنكبوت": "Al-'Ankabut", "الروم": "Ar-Rum",
+            "لقمان": "Luqman", "السجدة": "As-Sajdah", "الأحزاب": "Al-Ahzab", "سبأ": "Saba", "فاطر": "Fatir",
+            "يس": "Ya-Sin", "الصافات": "As-Saffat", "ص": "Sad", "الزمر": "Az-Zumar", "غافر": "Ghafir",
+            "فصلت": "Fussilat", "الشورى": "Ash-Shura", "الزخرف": "Az-Zukhruf", "الدخان": "Ad-Dukhan", "الجاثية": "Al-Jathiyah",
+            "الأحقاف": "Al-Ahqaf", "محمد": "Muhammad", "الفتح": "Al-Fath", "الحجرات": "Al-Hujurat", "ق": "Qaf",
+            "الذاريات": "Adh-Dhariyat", "الطور": "At-Tur", "النجم": "An-Najm", "القمر": "Al-Qamar", "الرحمن": "Ar-Rahman",
+            "الواقعة": "Al-Waqi'ah", "الحديد": "Al-Hadid", "المجادلة": "Al-Mujadilah", "الحشر": "Al-Hashr", "الممتحنة": "Al-Mumtahanah",
+            "الصف": "As-Saff", "الجمعة": "Al-Jumu'ah", "المنافقون": "Al-Munafiqun", "التغابن": "At-Taghabun", "الطلاق": "At-Talaq",
+            "التحريم": "At-Tahrim", "الملك": "Al-Mulk", "القلم": "Al-Qalam", "الحاقة": "Al-Haqqah", "المعارج": "Al-Ma'arij",
+            "نوح": "Nuh", "الجن": "Al-Jinn", "المزمل": "Al-Muzzammil", "المدثر": "Al-Muddaththir", "القيامة": "Al-Qiyamah",
+            "الإنسان": "Al-Insan", "المرسلات": "Al-Mursalat", "النبأ": "An-Naba", "النازعات": "An-Nazi'at", "عبس": "'Abasa",
+            "التكوير": "At-Takwir", "الانفطار": "Al-Infitar", "المطففين": "Al-Mutaffifin", "الانشقاق": "Al-Inshiqaq", "البروج": "Al-Buruj",
+            "الطارق": "At-Tariq", "الأعلى": "Al-A'la", "الغاشية": "Al-Ghashiyah", "الفجر": "Al-Fajr", "البلد": "Al-Balad",
+            "الشمس": "Ash-Shams", "الليل": "Al-Layl", "الضحى": "Ad-Duhaa", "الشرح": "Ash-Sharh", "التين": "At-Tin",
+            "العلق": "Al-'Alaq", "القدر": "Al-Qadr", "البينة": "Al-Bayyinah", "الزلزلة": "Az-Zalzalah", "العاديات": "Al-'Adiyat",
+            "القارعة": "Al-Qari'ah", "التكاثر": "At-Takathur", "العصر": "Al-'Asr", "الهمزة": "Al-Humazah", "الفيل": "Al-Fil",
+            "قريش": "Quraysh", "الماعون": "Al-Ma'un", "الكوثر": "Al-Kawthar", "الكافرون": "Al-Kafirun", "النصر": "An-Nasr",
+            "المسد": "Al-Masad", "الإخلاص": "Al-Ikhlas", "الفلق": "Al-Falaq", "الناس": "An-Nas"
+        };
+
+        // دالة لترجمة المهام بشكل ذكي
+        function translateTask(arTask) {
+            let enTask = arTask;
+            enTask = enTask.replace("حفظ سورة", "Memorize Surah");
+            enTask = enTask.replace("مراجعة سورة", "Review Surah");
+            enTask = enTask.replace("من آية", "from verse");
+            enTask = enTask.replace("إلى آية", "to verse");
+            
+            // ترجمة اسم السورة داخل المهمة إن وُجدت
+            for (const [ar, en] of Object.entries(surahTranslations)) {
+                if (enTask.includes(ar)) {
+                    enTask = enTask.replace(ar, en);
+                    break; 
+                }
+            }
+            return enTask;
+        }
+
+        function translateSurahName(arSurah) {
+            return surahTranslations[arSurah] || arSurah;
+        }
 
         function sanitizeHTML(str) { if(!str) return ""; const temp = document.createElement('div'); temp.textContent = str; return temp.innerHTML; } 
 
@@ -205,9 +253,11 @@
             document.getElementById('starsAr').innerText = `${data.stars || 0} نجمة`; 
             document.getElementById('starsEn').innerText = `${data.stars || 0} Stars`; 
 
-            const currentSurah = sanitizeHTML(data.currentSurah || "غير محدد"); 
-            document.getElementById('surahNameAr').innerText = `📖 السورة الحالية: ${currentSurah}`; 
-            document.getElementById('surahNameEn').innerText = `📖 Current Surah: ${currentSurah}`; 
+            const currentSurahAr = sanitizeHTML(data.currentSurah || "غير محدد"); 
+            const currentSurahEn = currentSurahAr === "غير محدد" ? "Not set" : translateSurahName(currentSurahAr);
+
+            document.getElementById('surahNameAr').innerText = `📖 السورة الحالية: ${currentSurahAr}`; 
+            document.getElementById('surahNameEn').innerText = `📖 Current Surah: ${currentSurahEn}`; 
 
             if(data.progress) { 
                 const saved = parseInt(data.progress.savedVerses) || 0; 
@@ -234,21 +284,22 @@
                 document.getElementById('uiNextDate').innerHTML = `<span lang="ar">${dateStrAr}</span><span lang="en">${dateStrEn}</span>`;
             }
 
-            // 🛡️ نظام المهام الجديد (صلاحية الأدمن فقط)
+            // 🛡️ نظام المهام الجديد (صلاحية الأدمن فقط) + الترجمة
             if(data.currentTask && data.currentTask.text) { 
-                const taskText = sanitizeHTML(data.currentTask.text); 
+                const taskTextAr = sanitizeHTML(data.currentTask.text); 
+                const taskTextEn = translateTask(taskTextAr);
+
                 const taskLink = sanitizeHTML(data.currentTask.link);
                 const isDone = data.currentTask.isDone || false; 
 
                 const waBtn = document.getElementById('whatsappBtn'); 
 
                 if (isDone) {
-                    // المهمة معتمدة من الإدارة
                     document.getElementById('taskContainer').innerHTML = ` 
                         <li class="task-item completed"> 
                             <i class="fas fa-check-circle task-icon" style="color: var(--success);"></i>
                             <div style="flex-grow: 1;">
-                                <span class="task-label">${taskText}</span> 
+                                <span class="task-label"><span lang="ar">${taskTextAr}</span><span lang="en">${taskTextEn}</span></span> 
                                 <div class="task-note">
                                     <span lang="ar">تم اعتماد التسميع من المعلم بنجاح! أحسنت يا بطل 🌟</span>
                                     <span lang="en">Task approved by the teacher! Great job 🌟</span>
@@ -256,14 +307,13 @@
                             </div>
                         </li> 
                     `;
-                    waBtn.style.display = 'none'; // إخفاء زر الواتساب لأنها خلصت
+                    waBtn.style.display = 'none'; 
                 } else {
-                    // المهمة قيد الانتظار (مطلوب تسميع)
                     document.getElementById('taskContainer').innerHTML = ` 
                         <li class="task-item"> 
                             <i class="fas fa-hourglass-half task-icon" style="color: var(--warning);"></i>
                             <div style="flex-grow: 1;">
-                                <span class="task-label">${taskText}</span> 
+                                <span class="task-label"><span lang="ar">${taskTextAr}</span><span lang="en">${taskTextEn}</span></span> 
                                 <div class="task-note">
                                     <span lang="ar">⚠️ ملاحظة: لكي تكتمل المهمة، اضغط على زر الواتساب بالأسفل لإرسال التسجيل الصوتي للمعلم ليقوم باعتمادها.</span>
                                     <span lang="en">⚠️ Note: To complete this task, tap the WhatsApp button below to send your audio recording for teacher's approval.</span>
@@ -273,7 +323,7 @@
                         </li> 
                     `;
                     waBtn.style.display = 'block'; 
-                    waBtn.href = `https://wa.me/201104871728?text=السلام عليكم، أرسل لك تسميعي الخاص بالمهمة:%0A📌 ${encodeURIComponent(taskText)}`; 
+                    waBtn.href = `https://wa.me/201104871728?text=السلام عليكم، أرسل لك تسميعي الخاص بالمهمة:%0A📌 ${encodeURIComponent(taskTextAr)}`; 
                 }
 
             } else {
@@ -296,8 +346,9 @@
                 const starsCount = parseInt(data.latestFeedback.stars) || 0;
                 document.getElementById('feedbackStars').innerText = '★'.repeat(starsCount) + '☆'.repeat(5 - starsCount);
                 const comment = sanitizeHTML(data.latestFeedback.comment);
-                document.getElementById('feedbackCommentAr').innerText = `"${comment}"`;
-                document.getElementById('feedbackCommentEn').innerText = `"${comment}"`;
+                
+                // رسالة التقييم ستبقى كما هي لأنها رسالة حرة يصعب ترجمتها آلياً 100% بدون AI خارجي
+                document.getElementById('feedbackComment').innerHTML = `"${comment}"`;
 
                 if(data.latestFeedback.stats) {
                     const mem = data.latestFeedback.stats.memorization || 0;
@@ -309,11 +360,13 @@
                 }
             }
 
+            // 🛡️ ترجمة السور المكتملة
             if(data.completedSurahs && data.completedSurahs.length > 0) {
                 let badgesHtml = "";
                 data.completedSurahs.reverse().forEach(surah => {
-                    const sName = sanitizeHTML(surah.name);
-                    badgesHtml += `<button class="surah-badge" style="cursor:default;">سورة ${sName}</button>`;
+                    const sNameAr = sanitizeHTML(surah.name);
+                    const sNameEn = translateSurahName(sNameAr);
+                    badgesHtml += `<button class="surah-badge" style="cursor:default;"><span lang="ar">سورة ${sNameAr}</span><span lang="en">Surah ${sNameEn}</span></button>`;
                 });
                 document.getElementById('badgesContainer').innerHTML = badgesHtml;
             }
@@ -327,7 +380,15 @@
         let currentLang = 'ar'; 
         function applySavedLanguage() { const savedLang = localStorage.getItem('siteLang'); if (savedLang) currentLang = savedLang; updateLanguageUI(); } 
         function toggleLanguage() { currentLang = currentLang === 'ar' ? 'en' : 'ar'; localStorage.setItem('siteLang', currentLang); updateLanguageUI(); } 
-        function updateLanguageUI() { document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr'; document.documentElement.lang = currentLang; document.querySelectorAll('[lang="en"]').forEach(el => el.style.display = currentLang === 'en' ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none'); document.querySelectorAll('[lang="ar"]').forEach(el => el.style.display = currentLang === 'ar' ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none'); document.getElementById('langSwitcher').textContent = currentLang === 'ar' ? 'English' : 'عربي'; } 
+        
+        function updateLanguageUI() { 
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr'; 
+            document.documentElement.lang = currentLang; 
+            document.querySelectorAll('[lang="en"]').forEach(el => el.style.display = currentLang === 'en' ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none'); 
+            document.querySelectorAll('[lang="ar"]').forEach(el => el.style.display = currentLang === 'ar' ? (el.tagName === 'SPAN' ? 'inline' : 'block') : 'none'); 
+            document.getElementById('langSwitcher').textContent = currentLang === 'ar' ? 'English' : 'عربي'; 
+        } 
+        
         window.onload = applySavedLanguage; 
     </script> 
 </body> 
