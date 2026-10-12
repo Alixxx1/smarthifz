@@ -542,6 +542,7 @@
         function logoutAdmin() { auth.signOut().then(() => window.location.replace("login.html")); } 
     </script> 
 
+<script>
     // 🛡️ دالة الحضور الذكية (مرتبطة بالاشتراكات)
         function addAttendance() { 
             const today = new Date().toLocaleDateString('en-CA'); 
@@ -588,6 +589,8 @@
                 }
             });
         }
-        
+
+ </script>
+ 
 </body> 
 </html>
