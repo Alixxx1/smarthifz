@@ -7,7 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style> 
-        :root { --primary: #1abc9c; --secondary: #2c3e50; --accent: #f39c12; --bg-light: #f4f9f8; --card-bg: #ffffff; --text-dark: #2c3e50; --text-light: #7f8c8d; --success: #2ecc71; --warning: #f59e0b; --whatsapp: #25D366; } 
+        /* 🛡️ إضافة بوكس سايزنج عام لتجنب خروج أي عنصر عن الإطار */
+        * { box-sizing: border-box; }
+
+        :root { --primary: #1abc9c; --secondary: #2c3e50; --accent: #f39c12; --bg-light: #f4f9f8; --card-bg: #ffffff; --text-dark: #2c3e50; --text-light: #7f8c8d; --success: #2ecc71; --warning: #f59e0b; --whatsapp: #25D366; --danger: #ef4444; } 
         body { font-family: 'Tajawal', 'Poppins', sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; } 
         #secureContent { display: none; } 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-light); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold; color: var(--primary); flex-direction: column; gap: 15px;} 
@@ -38,7 +41,14 @@
         .task-item.completed .task-note { background: transparent; border: none; color: var(--success); font-weight: bold; padding: 0; margin-top: 5px;}
 
         .task-link { background: #e8f8f5; color: var(--primary); text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; display: inline-block; border: 1px solid rgba(26,188,156,0.2); margin-top: 10px;} 
-        .whatsapp-btn { display: block; width: 100%; background: var(--whatsapp); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; text-decoration: none; text-align: center; margin-top: 15px; transition: 0.3s; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);} 
+        
+        /* 🛡️ زرار الواتساب (معدل لمنع الخروج عن الإطار وسنترته) */
+        .whatsapp-btn { 
+            display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; 
+            background: var(--whatsapp); color: white; border: none; padding: 15px; border-radius: 8px; 
+            font-weight: bold; text-decoration: none; margin-top: 15px; transition: 0.3s; font-size: 1.1rem; 
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); cursor: pointer; font-family: inherit;
+        } 
         .whatsapp-btn:hover { background: #1ebe57; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 211, 102, 0.3);} 
 
         /* باقي التنسيقات العامة */
@@ -81,21 +91,21 @@
 
             <div class="dashboard-grid"> 
                 
-                <!-- 🛡️ المهام المطلوبة (النظام الجديد) --> 
+                <!-- 🛡️ المهام المطلوبة --> 
                 <div class="card"> 
                     <h3 lang="ar"><i class="fas fa-tasks"></i> مهمة اليوم</h3> 
                     <h3 lang="en"><i class="fas fa-tasks"></i> Today's Task</h3> 
                     <ul class="task-list" id="taskContainer"> 
                         <li style="color:var(--text-light); text-align:center;">جاري التحميل...</li>
                     </ul> 
-                    <a href="#" id="whatsappBtn" target="_blank" class="whatsapp-btn" style="display: none;"> 
-                        <i class="fab fa-whatsapp"></i> 
+                    <button id="whatsappBtn" onclick="sendWhatsAppAlert()" class="whatsapp-btn" style="display: none;"> 
+                        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> 
                         <span lang="ar">إرسال تسجيل التسميع للمعلم</span> 
                         <span lang="en">Send Audio to Teacher</span> 
-                    </a> 
+                    </button> 
                 </div> 
 
-                <!-- 1. الحصة القادمة (محول لتوقيت مكة) --> 
+                <!-- 1. الحصة القادمة --> 
                 <div class="card next-session"> 
                     <h3 lang="ar">📅 موعد الحصة القادمة</h3> 
                     <h3 lang="en">📅 Next Session</h3> 
@@ -123,7 +133,16 @@
                     </div> 
                 </div> 
 
-                <!-- 3. سجل الحضور (ديناميكي) --> 
+                <!-- 💳 تفاصيل الاشتراك --> 
+                <div class="card" style="border-top-color: #34495e;"> 
+                    <h3 lang="ar"><i class="fas fa-id-card"></i> تفاصيل الاشتراك</h3> 
+                    <h3 lang="en"><i class="fas fa-id-card"></i> Subscription Details</h3> 
+                    <div id="subContainer">
+                        <span style="color:var(--text-light); font-size:0.9rem;">جاري التحميل...</span>
+                    </div> 
+                </div>
+
+                <!-- 3. سجل الحضور --> 
                 <div class="card attendance-card"> 
                     <h3 lang="ar">✅ سجل الحضور (آخر 4 حصص)</h3> 
                     <h3 lang="en">✅ Attendance (Last 4 Sessions)</h3> 
@@ -182,8 +201,10 @@
 
     <script> 
         let currentUserUid = null; 
-        
-        // --- 📚 قاموس بسيط لترجمة السور والمهام ---
+        let globalTaskAr = "";
+        let globalTaskEn = "";
+        let initialLangSet = false; 
+
         const surahTranslations = {
             "الفاتحة": "Al-Fatihah", "البقرة": "Al-Baqarah", "آل عمران": "Ali 'Imran", "النساء": "An-Nisa", "المائدة": "Al-Ma'idah",
             "الأنعام": "Al-An'am", "الأعراف": "Al-A'raf", "الأنفال": "Al-Anfal", "التوبة": "At-Tawbah", "يونس": "Yunus",
@@ -210,15 +231,12 @@
             "المسد": "Al-Masad", "الإخلاص": "Al-Ikhlas", "الفلق": "Al-Falaq", "الناس": "An-Nas"
         };
 
-        // دالة لترجمة المهام بشكل ذكي
         function translateTask(arTask) {
             let enTask = arTask;
             enTask = enTask.replace("حفظ سورة", "Memorize Surah");
             enTask = enTask.replace("مراجعة سورة", "Review Surah");
             enTask = enTask.replace("من آية", "from verse");
             enTask = enTask.replace("إلى آية", "to verse");
-            
-            // ترجمة اسم السورة داخل المهمة إن وُجدت
             for (const [ar, en] of Object.entries(surahTranslations)) {
                 if (enTask.includes(ar)) {
                     enTask = enTask.replace(ar, en);
@@ -247,6 +265,12 @@
         }); 
 
         function fetchStudentData(data) { 
+            if(!initialLangSet && data.language) {
+                currentLang = data.language; 
+                localStorage.setItem('siteLang', currentLang);
+                initialLangSet = true;
+            }
+
             const safeName = sanitizeHTML(data.fullName.split(' ')[0]); 
             document.getElementById('studentNameAr').innerText = safeName; 
             document.getElementById('studentNameEn').innerText = safeName; 
@@ -284,14 +308,15 @@
                 document.getElementById('uiNextDate').innerHTML = `<span lang="ar">${dateStrAr}</span><span lang="en">${dateStrEn}</span>`;
             }
 
-            // 🛡️ نظام المهام الجديد (صلاحية الأدمن فقط) + الترجمة
             if(data.currentTask && data.currentTask.text) { 
                 const taskTextAr = sanitizeHTML(data.currentTask.text); 
                 const taskTextEn = translateTask(taskTextAr);
+                
+                globalTaskAr = taskTextAr;
+                globalTaskEn = taskTextEn;
 
                 const taskLink = sanitizeHTML(data.currentTask.link);
                 const isDone = data.currentTask.isDone || false; 
-
                 const waBtn = document.getElementById('whatsappBtn'); 
 
                 if (isDone) {
@@ -322,13 +347,62 @@
                             </div>
                         </li> 
                     `;
-                    waBtn.style.display = 'block'; 
-                    waBtn.href = `https://wa.me/201104871728?text=السلام عليكم، أرسل لك تسميعي الخاص بالمهمة:%0A📌 ${encodeURIComponent(taskTextAr)}`; 
+                    waBtn.style.display = 'flex'; 
                 }
 
             } else {
                 document.getElementById('taskContainer').innerHTML = `<li style="color:var(--text-light); text-align:center;"><span lang="ar">لا توجد مهام مسندة حالياً.</span><span lang="en">No tasks assigned currently.</span></li>`;
                 document.getElementById('whatsappBtn').style.display = 'none';
+            }
+
+            // 💳 نظام عرض الاشتراكات للأب
+            if(data.subscription && data.subscription.status !== 'none') {
+                const sub = data.subscription;
+                const remaining = sub.totalSessions - (sub.attendedSessions || 0);
+                const progress = ((sub.attendedSessions || 0) / sub.totalSessions) * 100;
+                const planName = sanitizeHTML(sub.plan);
+                
+                let statusBadge = (sub.status === 'expired' || remaining <= 0) ? 
+                    `<span style="color:var(--danger); font-weight:bold; background:#fee2e2; padding:2px 10px; border-radius:10px; font-size:0.85rem;"><span lang="ar">منتهي</span><span lang="en">Expired</span></span>` : 
+                    `<span style="color:var(--success); font-weight:bold; background:#d1fae5; padding:2px 10px; border-radius:10px; font-size:0.85rem;"><span lang="ar">ساري</span><span lang="en">Active</span></span>`;
+
+                const barColor = (sub.status === 'expired' || remaining <= 0) ? 'background: var(--danger);' : 'background: var(--success);';
+
+                document.getElementById('subContainer').innerHTML = `
+                    <div style="background: var(--bg-light); padding: 15px; border-radius: 10px; border: 1px dashed var(--border-color);">
+                        <p style="margin: 5px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem;">
+                            <span lang="ar">الخطة:</span><span lang="en">Plan:</span>
+                            <span style="color: var(--text-light); font-weight: normal;">${planName}</span>
+                        </p>
+                        <p style="margin: 12px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem;">
+                            <span lang="ar">الحالة:</span><span lang="en">Status:</span>
+                            ${statusBadge}
+                        </p>
+                        <p style="margin: 12px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem;">
+                            <span lang="ar">إجمالي المحاضرات:</span><span lang="en">Total Sessions:</span>
+                            <span style="color: var(--text-light); font-weight: normal;">${sub.totalSessions}</span>
+                        </p>
+                        <p style="margin: 12px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem;">
+                            <span lang="ar">تم الحضور:</span><span lang="en">Attended:</span>
+                            <span style="color: var(--text-light); font-weight: normal;">${sub.attendedSessions || 0}</span>
+                        </p>
+                        <p style="margin: 12px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem;">
+                            <span lang="ar">متبقي:</span><span lang="en">Remaining:</span>
+                            <b style="color: ${remaining <= 0 ? 'var(--danger)' : 'var(--success)'}; font-size: 1.2rem;">${remaining > 0 ? remaining : 0}</b>
+                        </p>
+                        <div style="margin-top: 15px; background: #e2e8f0; height: 10px; border-radius: 10px; overflow: hidden;">
+                            <div style="width: ${progress}%; ${barColor} height: 100%; border-radius: 10px; transition: width 1s ease-in-out;"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('subContainer').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--danger); font-weight: bold; background: #fee2e2; border-radius: 10px; border: 1px dashed #fca5a5;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 10px;"></i><br>
+                        <span lang="ar">لا يوجد اشتراك مفعل حالياً.<br>يرجى مراجعة الإدارة.</span>
+                        <span lang="en">No active subscription.<br>Please contact administration.</span>
+                    </div>
+                `;
             }
 
             if(data.attendance && data.attendance.length > 0) {
@@ -346,8 +420,6 @@
                 const starsCount = parseInt(data.latestFeedback.stars) || 0;
                 document.getElementById('feedbackStars').innerText = '★'.repeat(starsCount) + '☆'.repeat(5 - starsCount);
                 const comment = sanitizeHTML(data.latestFeedback.comment);
-                
-                // رسالة التقييم ستبقى كما هي لأنها رسالة حرة يصعب ترجمتها آلياً 100% بدون AI خارجي
                 document.getElementById('feedbackComment').innerHTML = `"${comment}"`;
 
                 if(data.latestFeedback.stats) {
@@ -360,7 +432,6 @@
                 }
             }
 
-            // 🛡️ ترجمة السور المكتملة
             if(data.completedSurahs && data.completedSurahs.length > 0) {
                 let badgesHtml = "";
                 data.completedSurahs.reverse().forEach(surah => {
@@ -374,6 +445,17 @@
             document.getElementById('loader').style.display = 'none'; 
             updateLanguageUI();
         } 
+
+        function sendWhatsAppAlert() {
+            const phone = "201104871728";
+            let msg = "";
+            if (currentLang === 'en') {
+                msg = `Assalamu Alaikum,\nI am sending my audio recording for the task:\n📌 ${globalTaskEn}`;
+            } else {
+                msg = `السلام عليكم، أرسل لك تسميعي الخاص بالمهمة:\n📌 ${globalTaskAr}`;
+            }
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
 
         function logout() { auth.signOut().then(() => { window.location.replace("login.html"); }); } 
         

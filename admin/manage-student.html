@@ -541,5 +541,53 @@
         function updateRange(id, value) { document.getElementById(id).innerText = value + "%"; } 
         function logoutAdmin() { auth.signOut().then(() => window.location.replace("login.html")); } 
     </script> 
+
+    // 🛡️ دالة الحضور الذكية (مرتبطة بالاشتراكات)
+        function addAttendance() { 
+            const today = new Date().toLocaleDateString('en-CA'); 
+            
+            // نجلب بيانات الطالب الحالية للتأكد من اشتراكه
+            studentRef.get().then((doc) => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    const sub = data.subscription;
+
+                    // 1. لو مفيش اشتراك أصلاً
+                    if(!sub || sub.status === 'none') {
+                        alert("⚠️ هذا الطالب ليس لديه اشتراك مفعل! يرجى إضافة اشتراك من مركز الاشتراكات أولاً.");
+                        return;
+                    }
+
+                    // 2. لو الاشتراك منتهي
+                    if(sub.status === 'expired') {
+                        alert("⛔ اشتراك هذا الطالب منتهي! لقد استنفذ عدد محاضراته. يرجى التجديد.");
+                        return;
+                    }
+
+                    // 3. لو الاشتراك ساري، نضيف الحضور ونزود عدد المحاضرات اللي حضرها
+                    let newAttended = (sub.attendedSessions || 0) + 1;
+                    let newStatus = "active";
+
+                    // 4. فحص هل دي كانت آخر محاضرة ليه؟
+                    if (newAttended >= sub.totalSessions) {
+                        newStatus = "expired"; // قفلنا الاشتراك أوتوماتيك
+                    }
+
+                    // 5. حفظ التحديثات في الداتابيز
+                    studentRef.update({ 
+                        attendance: firebase.firestore.FieldValue.arrayUnion(today),
+                        "subscription.attendedSessions": newAttended,
+                        "subscription.status": newStatus
+                    }).then(() => { 
+                        if(newStatus === "expired") {
+                            alert(`✅ تم تسجيل الحضور.. \n⚠️ تنبيه هام: هذه كانت آخر محاضرة للطالب وتم تعليق اشتراكه!`);
+                        } else {
+                            alert(`✅ تم تسجيل الحضور بنجاح! (المحاضرة رقم ${newAttended} من ${sub.totalSessions})`);
+                        }
+                    });
+                }
+            });
+        }
+        
 </body> 
 </html>
